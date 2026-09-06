@@ -116,8 +116,10 @@ def build_audio(ffmpeg: str) -> Path:
         "acompressor=threshold=0.08:ratio=2:attack=20:release=250,"
         "afade=t=in:st=0:d=1.2,afade=t=out:st=13.8:d=1.2,alimiter=limit=0.35[a]"
     )
-    run([ffmpeg, "-y", "-hide_banner", "-loglevel", "warning", "-f", "lavfi", "-i", audio_filter,
-         "-map", "[a]", "-t", "15", "-c:a", "pcm_s16le", str(ambience)])
+run([ffmpeg, "-y", "-hide_banner", "-loglevel", "warning",
+     "-filter_complex", audio_filter,
+     "-map", "[a]", "-t", "15",
+     "-c:a", "pcm_s16le", str(ambience)])
     return ambience
 
 
