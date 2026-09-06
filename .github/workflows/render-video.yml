@@ -1,0 +1,54 @@
+name: Render compliance video
+
+on:
+  workflow_dispatch:
+
+jobs:
+  render-video:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download repository
+        uses: actions/checkout@v4
+
+      - name: Install FFmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Check FFmpeg
+        run: |
+          ffmpeg -version
+          ffprobe -version
+
+      - name: Show project files
+        run: |
+          echo "Repository:"
+          find . -maxdepth 2 -type f | sort
+
+          echo ""
+          echo "Assets:"
+          find assets -maxdepth 1 -type f | sort
+
+      - name: Build video
+        run: |
+          python3 build_video.py
+
+      - name: Verify rendered video
+        run: |
+          test -f output/compliance_final.mp4
+
+          ffprobe \
+            -v error \
+            -show_entries format=duration,size \
+            -show_entries stream=codec_name,width,height,r_frame_rate,pix_fmt \
+            -of default=noprint_wrappers=1 \
+            output/compliance_final.mp4
+
+      - name: Upload finished video
+        uses: actions/upload-artifact@v4
+        with:
+          name: compliance-video
+          path: |
+            output/compliance_final.mp4
+            output/debug/
